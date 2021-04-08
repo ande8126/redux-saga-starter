@@ -13,12 +13,16 @@ function App() {
   }
 
   const getElements = () => {
-    axios.get('/api/element').then(response => {
-      dispatch({ type: 'SET_ELEMENTS', payload: response.data });
-    })
-      .catch(error => {
-        console.log('error with element get request', error);
-      });
+  ////MOVE TO SAGA
+    //   axios.get('/api/element').then(response => {
+  //   ;
+  //   })
+  //     .catch(error => {
+  //       console.log('error with element get request', error);
+  //     });
+  // }
+    // our watcher is listening for a SET_ELEMENTS action type
+    dispatch({ type: 'SET_ELEMENTS', payload: [] });
   }
 
   useEffect(() => {

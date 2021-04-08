@@ -4,8 +4,13 @@ import App from './components/App/App.jsx';
 import registerServiceWorker from './registerServiceWorker';
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
+//// - needed for saga - ////
 import createSagaMiddleware from 'redux-saga';
 import logger from 'redux-logger';
+//// needed to send/receive actions to saga ////
+import { put, takeEvery } from 'redux-saga/effects';
+//// -needed for saga axios calls- ////
+import axios from 'axios';
 
 const firstReducer = (state = 0, action) => {
     if (action.type === 'BUTTON_ONE') {
@@ -34,12 +39,28 @@ const elementListReducer = (state = [], action) => {
     }
 };    
 
-// this is the saga that will watch for actions
+////- this is the saga that will watch for actions -////
+//this is a generator function, uses yields
 function* watcherSaga() {
+    yield takeEvery( 'SET_ELEMENTS', firstSaga )
+}
+
+////- first saga -////
+function* firstSaga( action ){
+    console.log( 'in first saga:', action );
+    //try axios call to server
+    try{
+        const response = yield axios.get( '/api/element' );
+        //put
+        yield put( {type: 'SET_ELEMENTS', payload: response.data } );
+    }catch( err ){
+        console.log( err );
+    }
+    // put (like a dispatch) to send to existing reducer
 
 }
 
-
+////- create our sagaMiddleware -////
 const sagaMiddleware = createSagaMiddleware();
 
 // This is creating the store
@@ -52,9 +73,10 @@ const storeInstance = createStore(
         secondReducer,
         elementListReducer,
     }),
+    //// - sagaMiddleware is applied here, like logger - ////
     applyMiddleware(sagaMiddleware, logger),
 );
-
+//// - use the Watcher - ////
 sagaMiddleware.run(watcherSaga);
 
 ReactDOM.render(<Provider store={storeInstance}><App/></Provider>, document.getElementById('root'));
